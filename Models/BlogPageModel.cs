@@ -10,6 +10,7 @@ namespace Blog.Models
     public string Title { get; set; }
     public string Content { get; set; }
 
+    [GraphQLIgnore]
     public int AuthorId { get; set; }
 
     public BlogPage(int id, string title, string content, int authorId)
@@ -26,7 +27,8 @@ namespace Blog.Models
       AuthorId = authorId;
     }
 
-    public Author GetAuthor() => new Author(1, "John Doe");
+    public async Task<Author?> GetAuthorAsync(
+    [Service] BlogDbContext database) => await database.Authors.FindAsync(AuthorId);
   }
 
   [Node]
@@ -44,6 +46,10 @@ namespace Blog.Models
       Id = id;
       Name = name;
     }
+
+    [UsePaging(MaxPageSize = 10, IncludeTotalCount = true, DefaultPageSize = 10)]
+    public async Task<IEnumerable<BlogPage>> GetBlogPagesAsync(
+      [Service] BlogDbContext database) => await database.BlogPages.Where(x => x.AuthorId == Id).ToListAsync();
   }
 
   public class BlogDbContext : DbContext
