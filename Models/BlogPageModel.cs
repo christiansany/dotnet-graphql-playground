@@ -1,3 +1,4 @@
+using HotChocolate.Resolvers;
 using Microsoft.EntityFrameworkCore;
 
 namespace Blog.Models
@@ -28,28 +29,29 @@ namespace Blog.Models
     }
 
     public async Task<Author?> GetAuthorAsync(
-    [Service] BlogDbContext database) => await database.Authors.FindAsync(AuthorId);
+      [Service] BlogDbContext database
+    ) => await database.Authors.FindAsync(AuthorId);
 
     public static async Task<BlogPage?> GetBlogPageAsync(
       int id,
       BlogPageBatchDataLoader dataLoader
-    )
-    {
-      return await dataLoader.LoadAsync(id);
-    }
+    ) => await dataLoader.LoadAsync(id);
   }
 
   public class BlogPageBatchDataLoader : BatchDataLoader<int, BlogPage>
   {
     private readonly BlogDbContext _database;
+    private readonly IResolverContext _context;
 
     public BlogPageBatchDataLoader(
       [Service] BlogDbContext database,
+      IResolverContext context,
       IBatchScheduler batchScheduler,
       DataLoaderOptions? options = null)
       : base(batchScheduler, options)
     {
       _database = database;
+      _context = context;
     }
 
     protected override async Task<IReadOnlyDictionary<int, BlogPage>> LoadBatchAsync(
@@ -57,7 +59,18 @@ namespace Blog.Models
         CancellationToken cancellationToken)
     {
       Console.WriteLine($"Loading {keys.Count} blog pages from the database.");
-      return await _database.BlogPages.Where(x => keys.Contains(x.Id)).ToDictionaryAsync(i => i.Id);
+      var res = await _database.BlogPages.Where(x => keys.Contains(x.Id)).ToDictionaryAsync(i => i.Id);
+
+      // Doesn't seem to be working 🤷‍♂️
+      // keys.ToList().ForEach(key =>
+      // {
+      //   if (!res.ContainsKey(key))
+      //   {
+      //     _context.ReportError($"Could not find blog page with ID {key}");
+      //   }
+      // });
+
+      return res;
     }
   }
 
@@ -79,7 +92,8 @@ namespace Blog.Models
 
     [UsePaging(MaxPageSize = 10, IncludeTotalCount = true, DefaultPageSize = 10)]
     public async Task<IEnumerable<BlogPage>> GetBlogPagesAsync(
-      [Service] BlogDbContext database) => await database.BlogPages.Where(x => x.AuthorId == Id).ToListAsync();
+      [Service] BlogDbContext database
+    ) => await database.BlogPages.Where(x => x.AuthorId == Id).ToListAsync();
   }
 
   public class BlogDbContext : DbContext

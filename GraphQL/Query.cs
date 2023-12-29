@@ -6,8 +6,18 @@ public class Query
 {
   public async Task<BlogPage?> GetBlogPageByIdAsync(
     [ID] int id,
-    BlogPageBatchDataLoader dataLoader
-  ) => await BlogPage.GetBlogPageAsync(id, dataLoader);
+    BlogPageBatchDataLoader dataLoader,
+      IResolverContext context
+  )
+  {
+    var res = await dataLoader.LoadAsync(id);
+    // TODO: Check if the error could be handled better
+    if (res == null)
+    {
+      context.ReportError($"Could not find blog page with ID {id}");
+    }
+    return res;
+  }
 
   public async Task<IList<BlogPage?>?> GetBlogPagesByIdAsync(
     [ID] int[] ids,
