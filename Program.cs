@@ -5,11 +5,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("Blog") ?? "Data Source=Blog.db";
 
-builder.Services.AddSqlite<BlogPageDb>(connectionString);
+builder.Services.AddSqlite<BlogDbContext>(connectionString);
 builder.Services
     .AddGraphQLServer()
     .AddGlobalObjectIdentification()
-    .RegisterDbContext<BlogPageDb>()
+    .RegisterDbContext<BlogDbContext>()
     .AddQueryType<Query>();
 
 var app = builder.Build();

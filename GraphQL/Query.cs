@@ -6,7 +6,7 @@ public class Query
 {
   public async Task<BlogPage?> GetBlogPageAsync(
     [ID] int id,
-    [Service] BlogPageDb database,
+    [Service] BlogDbContext database,
     IResolverContext context
   )
   {
@@ -20,7 +20,7 @@ public class Query
 
   public async Task<IList<BlogPage?>?> GetBlogPagesAsync(
     [ID] int[] ids,
-    [Service] BlogPageDb database,
+    [Service] BlogDbContext database,
     IResolverContext context
   )
   {
