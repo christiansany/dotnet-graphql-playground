@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
 var connectionString = builder.Configuration.GetConnectionString("Blog") ?? "Data Source=Blog.db";
 
 builder.Services

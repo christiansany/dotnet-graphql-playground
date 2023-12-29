@@ -61,13 +61,11 @@ namespace Blog.Models
       Console.WriteLine($"Loading {keys.Count} blog pages from the database.");
       var res = await _database.BlogPages.Where(x => keys.Contains(x.Id)).ToDictionaryAsync(i => i.Id);
 
-      // Doesn't seem to be working 🤷‍♂️
+      // Doesn't seem to be working this way 🤷‍♂️
       // keys.ToList().ForEach(key =>
       // {
       //   if (!res.ContainsKey(key))
-      //   {
       //     _context.ReportError($"Could not find blog page with ID {key}");
-      //   }
       // });
 
       return res;
@@ -94,6 +92,31 @@ namespace Blog.Models
     public async Task<IEnumerable<BlogPage>> GetBlogPagesAsync(
       [Service] BlogDbContext database
     ) => await database.BlogPages.Where(x => x.AuthorId == Id).ToListAsync();
+
+    public static async Task<Author?> GetAuthorAsync(
+      int id,
+      [Service] BlogDbContext database,
+      IResolverContext context
+    )
+    {
+      return await context.BatchDataLoader<int, Author>(
+        async (keys, ct) =>
+        {
+          var res = await database.Authors
+              .Where(x => keys.Contains(x.Id))
+              .ToDictionaryAsync(i => i.Id);
+
+          // Reporting not found entires works fine this way
+          keys.ToList().ForEach(key =>
+          {
+            if (!res.ContainsKey(key))
+              context.ReportError($"Could not find author with ID {key}");
+          });
+
+          return res;
+        })
+        .LoadAsync(id);
+    }
   }
 
   public class BlogDbContext : DbContext
