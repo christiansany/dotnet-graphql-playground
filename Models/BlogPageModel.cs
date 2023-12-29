@@ -4,6 +4,13 @@ using Microsoft.EntityFrameworkCore;
 namespace Blog.Models
 {
   [Node]
+  public record User([ID] int Id, string Name)
+  {
+    public List<BlogPage>? LikedBlogPages { get; set; }
+    public List<Author>? LikedAuthors { get; set; }
+  };
+
+  [Node]
   public class BlogPage
   {
     [ID]
@@ -13,6 +20,9 @@ namespace Blog.Models
 
     [GraphQLIgnore]
     public int AuthorId { get; set; }
+
+    [GraphQLIgnore]
+    public List<User>? LikedByUsers { get; set; }
 
     public BlogPage(int id, string title, string content, int authorId)
     {
@@ -58,7 +68,6 @@ namespace Blog.Models
         IReadOnlyList<int> keys,
         CancellationToken cancellationToken)
     {
-      Console.WriteLine($"Loading {keys.Count} blog pages from the database.");
       var res = await _database.BlogPages.Where(x => keys.Contains(x.Id)).ToDictionaryAsync(i => i.Id);
 
       // Doesn't seem to be working this way 🤷‍♂️
@@ -78,6 +87,9 @@ namespace Blog.Models
     [ID]
     public int Id { get; set; }
     public string Name { get; set; }
+
+    [GraphQLIgnore]
+    public List<User>? LikedByUsers { get; set; }
 
     public Author(int id, string name)
     {
@@ -124,5 +136,18 @@ namespace Blog.Models
     public BlogDbContext(DbContextOptions options) : base(options) { }
     public DbSet<BlogPage> BlogPages { get; set; } = null!;
     public DbSet<Author> Authors { get; set; } = null!;
+    public DbSet<User> Users { get; set; } = null!;
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+      modelBuilder.Entity<User>()
+          .HasMany(u => u.LikedBlogPages)
+          .WithMany(bp => bp.LikedByUsers)
+          .UsingEntity(j => j.ToTable("UserLikedBlogPages"));
+
+      modelBuilder.Entity<User>()
+          .HasMany(u => u.LikedAuthors)
+          .WithMany(a => a.LikedByUsers)
+          .UsingEntity(j => j.ToTable("UserLikedAuthors"));
+    }
   }
 }

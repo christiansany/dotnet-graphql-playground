@@ -4,20 +4,22 @@ using Microsoft.EntityFrameworkCore;
 
 public class Query
 {
-  public async Task<BlogPage?> GetBlogPageByIdAsync(
+  public User? GetUserById(
     [ID] int id,
-    BlogPageBatchDataLoader dataLoader,
-    IResolverContext context
+    [Service] BlogDbContext database
   )
   {
-    var res = await dataLoader.LoadAsync(id);
-    // TODO: Check if the error could be handled better (in the DataLoader?)
-    if (res == null)
-    {
-      context.ReportError($"Could not find blog page with ID {id}");
-    }
-    return res;
+    // This is probably fing horrible
+    return database.Users
+      .Include(u => u.LikedAuthors)
+      .Include(u => u.LikedBlogPages)
+      .FirstOrDefault(u => u.Id == id);
   }
+
+  public async Task<BlogPage?> GetBlogPageByIdAsync(
+    [ID] int id,
+    BlogPageBatchDataLoader dataLoader
+  ) => await dataLoader.LoadAsync(id);
 
   public async Task<IList<BlogPage?>?> GetBlogPagesByIdAsync(
     [ID] int[] ids,

@@ -12,7 +12,8 @@ builder.Services
   .AddGraphQLServer()
   .AddGlobalObjectIdentification()
   .RegisterDbContext<BlogDbContext>()
-  .AddQueryType<Query>();
+  .AddQueryType<Query>()
+  .AddProjections();
 
 var app = builder.Build();
 app.MapGraphQL();
