@@ -29,6 +29,36 @@ namespace Blog.Models
 
     public async Task<Author?> GetAuthorAsync(
     [Service] BlogDbContext database) => await database.Authors.FindAsync(AuthorId);
+
+    public static async Task<BlogPage?> GetBlogPageAsync(
+      int id,
+      BlogPageBatchDataLoader dataLoader
+    )
+    {
+      return await dataLoader.LoadAsync(id);
+    }
+  }
+
+  public class BlogPageBatchDataLoader : BatchDataLoader<int, BlogPage>
+  {
+    private readonly BlogDbContext _database;
+
+    public BlogPageBatchDataLoader(
+      [Service] BlogDbContext database,
+      IBatchScheduler batchScheduler,
+      DataLoaderOptions? options = null)
+      : base(batchScheduler, options)
+    {
+      _database = database;
+    }
+
+    protected override async Task<IReadOnlyDictionary<int, BlogPage>> LoadBatchAsync(
+        IReadOnlyList<int> keys,
+        CancellationToken cancellationToken)
+    {
+      Console.WriteLine($"Loading {keys.Count} blog pages from the database.");
+      return await _database.BlogPages.Where(x => keys.Contains(x.Id)).ToDictionaryAsync(i => i.Id);
+    }
   }
 
   [Node]
