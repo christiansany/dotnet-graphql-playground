@@ -1,24 +1,41 @@
 using Blog.Models;
+using HotChocolate.Resolvers;
+using Microsoft.EntityFrameworkCore;
 
 public class Query
 {
-  public BlogPage? GetBlogPage([ID] int id)
+  public async Task<BlogPage?> GetBlogPageAsync(
+    [ID] int id,
+    [Service] BlogPageDb database,
+    IResolverContext context
+  )
   {
-    return new BlogPage(
-      id: id,
-      title: "C# in depth.",
-      content: "C# in depth is a book about the C# language and the core .NET platform."
-      );
+    var res = await database.BlogPages.FindAsync(id);
+    if (res == null)
+    {
+      context.ReportError($"Could not find blog page with ID {id}");
+    }
+    return database.BlogPages.Find(id);
   }
 
-  public IList<BlogPage?>? GetBlogPages([ID] int[] ids)
+  public async Task<IList<BlogPage?>?> GetBlogPagesAsync(
+    [ID] int[] ids,
+    [Service] BlogPageDb database,
+    IResolverContext context
+  )
   {
-    return ids
-      .Select(id => new BlogPage(
-        id: id,
-        title: "C# in depth.",
-        content: "C# in depth is a book about the C# language and the core .NET platform."
-      ))
-      .ToList();
+    var dic = await database.BlogPages.Where(x => ids.Contains(x.Id)).ToDictionaryAsync(i => i.Id);
+    return ids.Select(id =>
+    {
+      if (dic.TryGetValue(id, out var blogPage))
+      {
+        return blogPage;
+      }
+      else
+      {
+        context.ReportError($"Could not find blog page with ID {id}");
+        return null;
+      }
+    }).ToList();
   }
 }

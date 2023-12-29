@@ -1,4 +1,3 @@
-using HotChocolate.Types.Relay;
 using Microsoft.EntityFrameworkCore;
 
 namespace Blog.Models
@@ -25,7 +24,7 @@ namespace Blog.Models
     }
   }
 
-  class BlogPageDb : DbContext
+  public class BlogPageDb : DbContext
   {
     public BlogPageDb(DbContextOptions options) : base(options) { }
     public DbSet<BlogPage> BlogPages { get; set; } = null!;

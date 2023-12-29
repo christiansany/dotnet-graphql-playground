@@ -9,6 +9,7 @@ builder.Services.AddSqlite<BlogPageDb>(connectionString);
 builder.Services
     .AddGraphQLServer()
     .AddGlobalObjectIdentification()
+    .RegisterDbContext<BlogPageDb>()
     .AddQueryType<Query>();
 
 var app = builder.Build();
