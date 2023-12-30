@@ -14,6 +14,8 @@ builder.Services
   .AddGlobalObjectIdentification()
   .RegisterDbContext<BlogDbContext>()
   .AddQueryType<Query>()
+  .AddMutationType<Mutation>()
+  .AddMutationConventions(applyToAllMutations: true)
   .AddProjections();
 
 var app = builder.Build();
