@@ -42,6 +42,26 @@ namespace Blog.Models
       [Service] BlogDbContext database
     ) => await database.Authors.FindAsync(AuthorId);
 
+    public bool? IsLikedByViewer(
+      [Service] IHttpContextAccessor httpContextAccessor,
+      [Service] BlogDbContext database
+    )
+    {
+      // How would it look like to make this reusable in .NET?
+      var headers = httpContextAccessor.HttpContext?.Request.Headers;
+      int.TryParse(headers?["User"].ToString(), out int userId);
+
+      if (userId == 0)
+        return null;
+
+      // This is working, but f*ing ugly...
+      var blogPage = database.BlogPages
+        .Include(x => x.LikedByUsers)
+        .FirstOrDefault(x => x.Id == Id);
+
+      return blogPage?.LikedByUsers?.Any(x => x.Id == userId);
+    }
+
     public static async Task<BlogPage?> GetBlogPageAsync(
       int id,
       BlogPageBatchDataLoader dataLoader
@@ -104,6 +124,26 @@ namespace Blog.Models
     public async Task<IEnumerable<BlogPage>> GetBlogPagesAsync(
       [Service] BlogDbContext database
     ) => await database.BlogPages.Where(x => x.AuthorId == Id).ToListAsync();
+
+    public bool? IsLikedByViewer(
+      [Service] IHttpContextAccessor httpContextAccessor,
+      [Service] BlogDbContext database
+    )
+    {
+      // How would it look like to make this reusable in .NET?
+      var headers = httpContextAccessor.HttpContext?.Request.Headers;
+      int.TryParse(headers?["User"].ToString(), out int userId);
+
+      if (userId == 0)
+        return null;
+
+      // This is working, but f*ing ugly...
+      var author = database.Authors
+        .Include(x => x.LikedByUsers)
+        .FirstOrDefault(x => x.Id == Id);
+
+      return author?.LikedByUsers?.Any(x => x.Id == userId);
+    }
 
     public static async Task<Author?> GetAuthorAsync(
       int id,

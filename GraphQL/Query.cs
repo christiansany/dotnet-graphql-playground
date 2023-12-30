@@ -5,21 +5,24 @@ using Microsoft.EntityFrameworkCore;
 
 public class Query
 {
-  public User? GetUserById(
-    [ID] int id,
+  public User? GetViewer(
+    [Service] IHttpContextAccessor httpContextAccessor,
     [Service] BlogDbContext database
   )
   {
-    // This is probably fing horrible
+    // How would it look like to make this reusable in .NET?
+    var headers = httpContextAccessor.HttpContext?.Request.Headers;
+    int.TryParse(headers?["User"].ToString(), out int userId);
+
+    if (userId == 0)
+      return null;
+
+    // This is probably f*ing horrible
+    // Can we use projections to do this? -> Tried and could get it to work
     return database.Users
       .Include(u => u.LikedAuthors)
       .Include(u => u.LikedBlogPages)
-      .FirstOrDefault(u => u.Id == id);
-  }
-
-  public User? GetViewer()
-  {
-    return new User(1, "Viewer");
+      .FirstOrDefault(u => u.Id == userId);
   }
 
   public async Task<BlogPage?> GetBlogPageByIdAsync(

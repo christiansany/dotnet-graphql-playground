@@ -8,6 +8,7 @@ var connectionString = builder.Configuration.GetConnectionString("Blog") ?? "Dat
 
 builder.Services
   .AddSqlite<BlogDbContext>(connectionString);
+builder.Services.AddHttpContextAccessor();
 builder.Services
   .AddGraphQLServer()
   .AddGlobalObjectIdentification()
