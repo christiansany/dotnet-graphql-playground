@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.002.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "web-test-project", "web-test-project.csproj", "{842B2F1A-3B50-4EBC-8293-EB8ABCABE120}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-graphql-playground", "dotnet-graphql-playground.csproj", "{842B2F1A-3B50-4EBC-8293-EB8ABCABE120}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
